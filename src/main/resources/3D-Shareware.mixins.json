@@ -8,7 +8,8 @@
     "entity.CreeperEntityRendererMixin",
     "entity.ElderGuardianEntityMixin",
     "entity.RavagerEntityMixin",
-    "entity.WitherEntityMixin"
+    "entity.WitherEntityMixin",
+    "gui.GameRendererMixin"
   ],
   "client": [
     "KeyboardMixin",

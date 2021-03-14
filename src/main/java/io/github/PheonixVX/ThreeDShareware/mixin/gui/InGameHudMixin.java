@@ -1,5 +1,6 @@
 package io.github.PheonixVX.ThreeDShareware.mixin.gui;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.options.AttackIndicator;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -17,6 +19,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Quaternion;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -79,7 +82,6 @@ public abstract class InGameHudMixin extends DrawableHelper {
 		this.setZOffset((int) offset);
 		RenderSystem.enableRescaleNormal();
 		RenderSystem.enableBlend();
-		//RenderSystem.blendFuncSeparate(RenderSystem.SrcFactor.SRC_ALPHA, RenderSystem.DstFactor.ONE_MINUS_SRC_ALPHA, RenderSystem.SrcFactor.ONE, RenderSystem.DstFactor.ZERO);
 		RenderSystem.defaultBlendFunc();
 		DiffuseLighting.enableGuiDepthLighting(); // TODO: enableForItems()?
 		for (int i = 0; i < 9; ++i) {
@@ -113,46 +115,45 @@ public abstract class InGameHudMixin extends DrawableHelper {
 	private void renderStatusBars(MatrixStack matrices) {
 		PlayerEntity player = this.getCameraPlayer();
 		if (player != null) {
-			int var2 = MathHelper.ceil(player.getHealth());
+			int health = MathHelper.ceil(player.getHealth());
 			this.random.setSeed(this.getTicks() * 312871L);
 			HungerManager var3 = player.getHungerManager();
-			int var4 = var3.getFoodLevel();
-			int var5 = this.scaledWidth / 2;
-			int var6 = var5 - 91;
-			int var7 = var5 + 91;
-			int var8 = this.scaledHeight - 74;
-			int var9 = MathHelper.ceil(player.getAbsorptionAmount());
+			int foodLevel = var3.getFoodLevel();
+			int width = this.scaledWidth / 2;
+			int posX = width + 91;
+			int height = this.scaledHeight - 74;
+			int absorptionAmount = MathHelper.ceil(player.getAbsorptionAmount());
 			this.client.getProfiler().push("armor");
-			int var10 = player.getArmor();
-			String var11 = String.format("%02d%%", var10 * 100 / 20);
-			int var12 = this.getFontRenderer().getWidth(var11);
-			int var13 = var5 - 128;
+			int armor = player.getArmor();
+			String formattedArmorString = String.format("%02d%%", armor * 100 / 20);
+			int widthOfArmorString = this.getFontRenderer().getWidth(formattedArmorString);
+			int var13 = width - 128;
 			int var14 = this.scaledHeight - 64;
-			this.getFontRenderer().draw(matrices, var11, (float)(var13 + 25 + (23 - var12)), (float)(var14 + 41), -1);
+			this.getFontRenderer().draw(matrices, formattedArmorString, (float)(var13 + 25 + (23 - widthOfArmorString)), (float)(var14 + 41), -1);
 			this.client.getProfiler().swap("health");
 			float var15 = player.getMaxHealth();
-			String var16 = String.format("%02.0f%%", (float)(var2 + var9) / var15 * 100.0F);
+			String var16 = String.format("%02.0f%%", (float)(health + absorptionAmount) / var15 * 100.0F);
 			int var17 = this.getFontRenderer().getWidth(var16);
-			this.getFontRenderer().draw(matrices, var16, (float)(var13 + 25 + (23 - var17)), (float)(var14 + 8), var9 > 0 ? -256 : -65536);
+			this.getFontRenderer().draw(matrices, var16, (float)(var13 + 25 + (23 - var17)), (float)(var14 + 8), absorptionAmount > 0 ? -256 : -65536);
 			this.client.getTextureManager().bindTexture(HOT_BAR_TEXTURE);
-			int var18 = var8 - 10;
+			int posY = height - 10;
 			this.client.getProfiler().swap("food");
-			int var19 = 32 * var4 / 20;
+			int var19 = 32 * foodLevel / 20;
 			this.drawTexture(matrices, var13 + 161, var14 + 14, 0, 128, 32, var19);
-			var18 -= 10;
+			posY -= 10;
 			this.client.getTextureManager().bindTexture(DrawableHelper.GUI_ICONS_TEXTURE);
 			this.client.getProfiler().swap("air");
-			int var20 = player.getAir();
-			int var21 = player.getMaxAir();
-			if (player.world.getFluidState(new BlockPos(player.getPos())).isIn(FluidTags.WATER) || var20 < var21) {
-				int var23 = MathHelper.ceil((double)(var20 - 2) * 10.0D / (double)var21);
-				int var24 = MathHelper.ceil((double)var20 * 10.0D / (double)var21) - var23;
+			int currentAir = player.getAir();
+			int maximumAir = player.getMaxAir();
+			if (player.isSubmergedIn(FluidTags.WATER) || currentAir < maximumAir) {
+				int var23 = MathHelper.ceil((double)(currentAir - 2) * 10.0D / (double)maximumAir);
+				int var24 = MathHelper.ceil((double)currentAir * 10.0D / (double)maximumAir) - var23;
 
 				for(int var25 = 0; var25 < var23 + var24; ++var25) {
 					if (var25 < var23) {
-						this.drawTexture(matrices, var7 - var25 * 8 - 9, var18, 16, 18, 9, 9);
+						this.drawTexture(matrices, posX - var25 * 8 - 9, posY + 15, 16, 18, 9, 9);
 					} else {
-						this.drawTexture(matrices, var7 - var25 * 8 - 9, var18, 25, 18, 9, 9);
+						this.drawTexture(matrices, posX - var25 * 8 - 9, posY + 15, 25, 18, 9, 9);
 					}
 				}
 			}
@@ -168,5 +169,14 @@ public abstract class InGameHudMixin extends DrawableHelper {
 	)
 	private int modifyYPosition(int original) {
 		return this.scaledHeight - 70;
+	}
+
+	@ModifyArg(
+		method = "renderExperienceBar",
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;draw(Lnet/minecraft/client/util/math/MatrixStack;Ljava/lang/String;FFI)I"),
+		index = 3
+	)
+	private float modifyYPositionOfExperienceLevel(float original) {
+		return this.scaledHeight - 80.0F;
 	}
 }
