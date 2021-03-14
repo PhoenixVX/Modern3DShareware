@@ -1,0 +1,8 @@
+{
+    "parent": "block/cube_bottom_top",
+    "textures": {
+        "top": "threedshareware:block/barrel_top",
+        "side": "threedshareware:block/barrel_side",
+        "bottom": "threedshareware:block/barrel_bottom"
+    }
+}

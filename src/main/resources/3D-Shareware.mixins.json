@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.PheonixVX.ThreeDShareware.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "KeyboardMixin",
+    "MinecraftClientMixin",
+    "entity.BarrelBlockEntityMixin",
+    "entity.ElderGuardianEntityMixin",
+    "entity.RavagerEntityMixin",
+    "entity.WitherEntityMixin",
+    "gui.InGameHudMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
