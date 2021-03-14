@@ -1,8 +1,9 @@
-package io.github.PheonixVX.ThreeDShareware.mixin;
+package io.github.PheonixVX.ThreeDShareware.mixin.client;
 
 import io.github.PheonixVX.ThreeDShareware.gui.screen.CustomSplashScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
+import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.util.Window;
@@ -17,13 +18,35 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public class MinecraftClientMixin {
+public abstract class MinecraftClientMixin {
 
-	@Shadow @Nullable public Screen currentScreen;
-	@Shadow @Final public Mouse mouse;
-	@Shadow public boolean skipGameRender;
-	@Shadow @Final private Window window;
-	@Shadow @Final private SoundManager soundManager;
+	@Shadow
+	@Nullable
+	public Screen currentScreen;
+	@Shadow
+	@Final
+	public Mouse mouse;
+	@Shadow
+	public boolean skipGameRender;
+	@Shadow
+	@Final
+	private Window window;
+	@Shadow
+	@Final
+	private SoundManager soundManager;
+
+	@Shadow
+	private volatile boolean running;
+
+	@Shadow
+	private boolean windowFocused;
+
+	@Shadow
+	public abstract void scheduleStop ();
+
+	@Shadow public abstract void setOverlay (@Nullable Overlay overlay);
+
+	@Shadow public abstract void stop ();
 
 	@Inject(at = @At("HEAD"), method = "openScreen", cancellable = true)
 	public void openScreen (Screen screen, CallbackInfo ci) {
@@ -47,7 +70,7 @@ public class MinecraftClientMixin {
 	}
 
 	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;openScreen(Lnet/minecraft/client/gui/screen/Screen;)V", ordinal = 1), method = "<init>")
-	private Screen redirectScreen(Screen originalScreen) {
+	private Screen redirectScreen (Screen originalScreen) {
 		return new CustomSplashScreen(Text.of("Awesome Intro"));
 	}
 }

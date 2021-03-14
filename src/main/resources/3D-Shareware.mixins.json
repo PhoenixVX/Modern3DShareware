@@ -4,15 +4,16 @@
   "package": "io.github.PheonixVX.ThreeDShareware.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "KeyboardMixin",
-    "MinecraftClientMixin",
     "entity.BarrelBlockEntityMixin",
+    "entity.CreeperEntityRendererMixin",
     "entity.ElderGuardianEntityMixin",
     "entity.RavagerEntityMixin",
-    "entity.WitherEntityMixin",
-    "gui.InGameHudMixin"
+    "entity.WitherEntityMixin"
   ],
   "client": [
+    "KeyboardMixin",
+    "client.MinecraftClientMixin",
+    "gui.InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
