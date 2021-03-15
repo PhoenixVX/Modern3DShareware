@@ -29,7 +29,7 @@ public class GameRendererMixin {
 		this.textWidth = 1;
 	}
 
-	@Inject(at = @At("HEAD"), method = "render")
+	@Inject(at = @At("TAIL"), method = "render")
 	public void render (float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
 		GlStateManager.disableLighting();
 		int var1 = this.client.getWindow().getScaledWidth();
