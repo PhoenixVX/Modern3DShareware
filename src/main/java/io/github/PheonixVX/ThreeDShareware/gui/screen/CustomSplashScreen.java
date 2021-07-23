@@ -1,6 +1,5 @@
 package io.github.PheonixVX.ThreeDShareware.gui.screen;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.PheonixVX.ThreeDShareware.registry.GenericRegistry;
 import net.minecraft.client.MinecraftClient;
@@ -8,6 +7,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
@@ -18,6 +18,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3f;
 
 public class CustomSplashScreen extends Screen {
 	private static final Identifier MOJANG_LOGO = new Identifier("textures/gui/mojang_logo.png");
@@ -37,14 +38,14 @@ public class CustomSplashScreen extends Screen {
 
 	@Override
 	public void render (MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		GlStateManager.enableTexture();
-		GlStateManager.enableBlend();
-		GlStateManager.disableAlphaTest();
+		RenderSystem.enableTexture();
+		RenderSystem.enableBlend();
+		RenderSystem.disableDepthTest();
 		//GlStateManager.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
 		RenderSystem.defaultBlendFunc();
-		GlStateManager.clearColor(1.0F, 1.0F, 1.0F, 1.0F);
-		GlStateManager.clear(16640, MinecraftClient.IS_SYSTEM_MAC);
-		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.clearColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.clear(16640, MinecraftClient.IS_SYSTEM_MAC);
+		RenderSystem.clearColor(1.0F, 1.0F, 1.0F, 1.0F);
 		long var4 = Util.getMeasuringTimeMs();
 		long var6 = var4 - this.field_19240;
 		this.field_19240 = var4;
@@ -66,7 +67,7 @@ public class CustomSplashScreen extends Screen {
 					this.client.getSoundManager().play(this.sound);
 				}
 			} else if (!this.client.getSoundManager().isPlaying(this.sound)) {
-				this.client.openScreen(new TitleScreen());
+				this.client.setScreen(new TitleScreen());
 				this.field_19237 = class_4295.field_19243;
 			}
 
@@ -74,26 +75,28 @@ public class CustomSplashScreen extends Screen {
 			float var9 = 100.0F * MathHelper.sin(this.field_19239);
 			Tessellator var10 = Tessellator.getInstance();
 			BufferBuilder var11 = var10.getBuffer();
-			var11.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+			var11.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 			if (this.field_19238 != -1L) {
-				this.client.getTextureManager().bindTexture(MOJANG_TEXT);
+				RenderSystem.setShaderTexture(0, MOJANG_TEXT);
 				int var12 = MathHelper.clamp((int)(var4 - this.field_19238), 0, 255);
 				this.method_20278(var11, this.width / 2, this.height - this.height / 8, 208, 38, var12);
 			}
 
 			var10.draw();
-			GlStateManager.pushMatrix();
-			GlStateManager.translatef((float)this.width / 2.0F, (float)this.height / 2.0F, this.getZOffset());
-			GlStateManager.rotatef(var8, 0.0F, 0.0F, 1.0F);
-			GlStateManager.translatef(var9, 0.0F, 0.0F);
+			matrices.push();
+			matrices.translate((float)this.width / 2.0F, (float)this.height / 2.0F, this.getZOffset());
+			matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(var8));
+			// matrices.rotatef(var8, 0.0F, 0.0F, 1.0F);
+			matrices.translate(var9, 0.0F, 0.0F);
 			float var13 = 1.0F / (2.0F * this.field_19239 + 1.0F);
-			GlStateManager.rotatef(1.5F * this.field_19239, 0.0F, 0.0F, 1.0F);
-			GlStateManager.scalef(var13, var13, 1.0F);
-			this.client.getTextureManager().bindTexture(MOJANG_LOGO);
-			var11.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+			matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(1.5F * this.field_19239));
+			//matrices.rotatef(1.5F * this.field_19239, 0.0F, 0.0F, 1.0F);
+			matrices.scale(var13, var13, 1.0F);
+			RenderSystem.setShaderTexture(0, MOJANG_LOGO);
+			var11.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 			this.method_20278(var11, 0, 0, 78, 76, 255);
 			var10.draw();
-			GlStateManager.popMatrix();
+			matrices.pop();
 		}
 	}
 
@@ -108,7 +111,7 @@ public class CustomSplashScreen extends Screen {
 
 	@Override
 	public void onClose () {
-		this.client.openScreen(new TitleScreen());
+		this.client.setScreen(new TitleScreen());
 	}
 
 	enum class_4295 {

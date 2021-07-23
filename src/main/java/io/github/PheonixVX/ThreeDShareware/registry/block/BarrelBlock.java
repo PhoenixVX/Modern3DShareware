@@ -23,7 +23,6 @@ import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
@@ -62,12 +61,6 @@ public class BarrelBlock extends BlockWithEntity {
 			world.updateComparators(pos, this);
 		}
 		super.onStateReplaced(state, world, pos, newState, moved);
-	}
-
-	@Nullable
-	@Override
-	public BlockEntity createBlockEntity (BlockView world) {
-		return null;
 	}
 
 	@Override
@@ -120,5 +113,11 @@ public class BarrelBlock extends BlockWithEntity {
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext itemPlacementContext) {
 		return this.getDefaultState().with(FACING, itemPlacementContext.getPlayerFacing().getOpposite());
+	}
+
+	@Nullable
+	@Override
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return null;
 	}
 }

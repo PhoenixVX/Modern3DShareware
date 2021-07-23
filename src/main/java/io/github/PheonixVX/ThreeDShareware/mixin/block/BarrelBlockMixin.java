@@ -19,8 +19,7 @@ public abstract class BarrelBlockMixin extends BlockWithEntity {
 
 	@Override
 	public void onEntityCollision (BlockState state, World world, BlockPos pos, Entity entity) {
-		if (!world.isClient && entity instanceof ProjectileEntity) {
-			ProjectileEntity projectileEntity = (ProjectileEntity)entity;
+		if (!world.isClient && entity instanceof ProjectileEntity projectileEntity) {
 			Entity ownerOfProjectile = projectileEntity.getOwner();
 			world.createExplosion(ownerOfProjectile, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 5.0f, Explosion.DestructionType.DESTROY);
 		}

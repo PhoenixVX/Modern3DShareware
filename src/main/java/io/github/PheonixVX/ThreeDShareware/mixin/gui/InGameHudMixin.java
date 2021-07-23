@@ -1,25 +1,21 @@
 package io.github.PheonixVX.ThreeDShareware.mixin.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.options.AttackIndicator;
+import net.minecraft.client.option.AttackIndicator;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tag.FluidTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Quaternion;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -37,10 +33,10 @@ public abstract class InGameHudMixin extends DrawableHelper {
 	@Shadow private int scaledHeight;
 	@Shadow @Final private MinecraftClient client;
 	@Shadow @Final private static Identifier WIDGETS_TEXTURE;
-	@Shadow protected abstract void renderHotbarItem (int x, int y, float tickDelta, PlayerEntity player, ItemStack stack);
+	@Shadow protected abstract void renderHotbarItem(int x, int y, float tickDelta, PlayerEntity player, ItemStack stack, int seed);
 	@Shadow @Final private Random random;
 	@Shadow public abstract int getTicks ();
-	@Shadow public abstract TextRenderer getFontRenderer ();
+	@Shadow public abstract TextRenderer getTextRenderer();
 
 	private static final Identifier HOT_BAR_TEXTURE = new Identifier("textures/gui/hotbar.png");
 
@@ -49,7 +45,7 @@ public abstract class InGameHudMixin extends DrawableHelper {
 	 * @reason There isn't a way to make this compatible, so shut up and take my mixin
 	 */
 	@Overwrite
-	public void renderHotbar(float tickDelta, MatrixStack matrices) {
+	private void renderHotbar(float tickDelta, MatrixStack matrices) {
 		PlayerEntity playerEntity = this.getCameraPlayer();
 		if (playerEntity == null) {
 			return;
@@ -58,36 +54,36 @@ public abstract class InGameHudMixin extends DrawableHelper {
 		int width = this.scaledWidth / 2;
 		int hotBarWidth = width - 128;
 		int height = this.scaledHeight - 64;
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderSystem.clearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		this.client.getTextureManager().bindTexture(HOT_BAR_TEXTURE);
 		float offset = this.getZOffset();
 		this.setZOffset(-660);
 		this.drawTexture(matrices, hotBarWidth, height, 0, 64, 256, 64);
-		RenderSystem.pushMatrix();
-		RenderSystem.translatef(0.0f, 0.0f, -200.0f);
+		matrices.push();
+		matrices.translate(0.0f, 0.0f, -200.0f);
 		int time = (int)(Util.getMeasuringTimeMs() / 2000L % 4L);
 		float[] ticks = new float[]{-20.0f, 0.0f, 20.0f, 0.0f};
 		if (this.client.getEntityRenderDispatcher().camera != null) {
 			InventoryScreen.drawEntity(hotBarWidth + 128, height + 135, 64, ticks[time], 0.0f, playerEntity);
 		}
-		RenderSystem.popMatrix();
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+		matrices.pop();
+		RenderSystem.clearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		this.client.getTextureManager().bindTexture(HOT_BAR_TEXTURE);
 		this.setZOffset(-90);
 		this.drawTexture(matrices, hotBarWidth, height, 0, 0, 256, 64);
 		this.client.getTextureManager().bindTexture(WIDGETS_TEXTURE);
-		int slotX = playerEntity.inventory.selectedSlot % 3;
-		int slotY = playerEntity.inventory.selectedSlot / 3;
+		int slotX = playerEntity.getInventory().selectedSlot % 3;
+		int slotY = playerEntity.getInventory().selectedSlot / 3;
 		this.drawTexture(matrices,hotBarWidth + 194 + slotX * 20 - 1, height + 2 + slotY * 20 - 1, 0, 22, 24, 22);
 		this.setZOffset((int) offset);
-		RenderSystem.enableRescaleNormal();
+		//RenderSystem.enableRescaleNormal();
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		DiffuseLighting.enableGuiDepthLighting(); // TODO: enableForItems()?
 		for (int i = 0; i < 9; ++i) {
 			int var12 = hotBarWidth + 194 + i % 3 * 20 + 2;
             int var13 = height + 2 + i / 3 * 20 + 2;
-			this.renderHotbarItem(var12, var13, tickDelta, playerEntity, playerEntity.inventory.main.get(i));
+			this.renderHotbarItem(var12, var13, tickDelta, playerEntity, playerEntity.getInventory().main.get(i), i);
 		}
 		if (this.client.options.attackIndicator == AttackIndicator.HOTBAR) {
 			float var15 = this.client.player.getAttackCooldownProgress(0.0F);
@@ -96,14 +92,15 @@ public abstract class InGameHudMixin extends DrawableHelper {
 				int var13 = hotBarWidth + 194 + slotX * 22;
 				this.client.getTextureManager().bindTexture(DrawableHelper.GUI_ICONS_TEXTURE);
 				int var14 = (int)(var15 * 19.0F);
-				RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+				RenderSystem.clearColor(1.0F, 1.0F, 1.0F, 1.0F);
 				this.drawTexture(matrices, var13, var12, 0, 94, 18, 18);
 				this.drawTexture(matrices, var13, var12 + 18 - var14, 18, 112 - var14, 18, var14);
 			}
 		}
 
-		DiffuseLighting.disable();
-		RenderSystem.disableRescaleNormal();
+		DiffuseLighting.disableGuiDepthLighting();
+		//DiffuseLighting.disable();
+		//RenderSystem.disableRescaleNormal();
 		RenderSystem.disableBlend();
 	}
 
@@ -126,15 +123,15 @@ public abstract class InGameHudMixin extends DrawableHelper {
 			this.client.getProfiler().push("armor");
 			int armor = player.getArmor();
 			String formattedArmorString = String.format("%02d%%", armor * 100 / 20);
-			int widthOfArmorString = this.getFontRenderer().getWidth(formattedArmorString);
+			int widthOfArmorString = this.getTextRenderer().getWidth(formattedArmorString);
 			int var13 = width - 128;
 			int var14 = this.scaledHeight - 64;
-			this.getFontRenderer().draw(matrices, formattedArmorString, (float)(var13 + 25 + (23 - widthOfArmorString)), (float)(var14 + 41), -1);
+			this.getTextRenderer().draw(matrices, formattedArmorString, (float)(var13 + 25 + (23 - widthOfArmorString)), (float)(var14 + 41), -1);
 			this.client.getProfiler().swap("health");
 			float var15 = player.getMaxHealth();
 			String var16 = String.format("%02.0f%%", (float)(health + absorptionAmount) / var15 * 100.0F);
-			int var17 = this.getFontRenderer().getWidth(var16);
-			this.getFontRenderer().draw(matrices, var16, (float)(var13 + 25 + (23 - var17)), (float)(var14 + 8), absorptionAmount > 0 ? -256 : -65536);
+			int var17 = this.getTextRenderer().getWidth(var16);
+			this.getTextRenderer().draw(matrices, var16, (float)(var13 + 25 + (23 - var17)), (float)(var14 + 8), absorptionAmount > 0 ? -256 : -65536);
 			this.client.getTextureManager().bindTexture(HOT_BAR_TEXTURE);
 			int posY = height - 10;
 			this.client.getProfiler().swap("food");

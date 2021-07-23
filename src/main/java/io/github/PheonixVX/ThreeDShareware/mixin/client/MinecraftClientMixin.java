@@ -48,7 +48,7 @@ public abstract class MinecraftClientMixin {
 
 	@Shadow public abstract void stop ();
 
-	@Inject(at = @At("HEAD"), method = "openScreen", cancellable = true)
+	@Inject(at = @At("HEAD"), method = "setScreen", cancellable = true)
 	public void openScreen (Screen screen, CallbackInfo ci) {
 		/*if (screen instanceof TitleScreen) {
 			screen = new CustomTitleScreen();

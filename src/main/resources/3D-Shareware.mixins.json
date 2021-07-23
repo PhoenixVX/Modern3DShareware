@@ -5,10 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "block.BarrelBlockMixin",
-    "entity.BarrelBlockEntityMixin",
-    "entity.CreeperEntityRendererMixin",
     "entity.ElderGuardianEntityMixin",
-    "entity.LivingEntityRendererMixin",
     "entity.RavagerEntityMixin",
     "entity.WitherEntityMixin",
     "gui.GameRendererMixin"

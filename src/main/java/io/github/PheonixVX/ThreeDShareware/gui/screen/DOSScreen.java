@@ -1,9 +1,11 @@
 package io.github.PheonixVX.ThreeDShareware.gui.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.ResourceTexture;
@@ -28,10 +30,10 @@ public class DOSScreen extends Screen {
 
 	@Override
 	public void render (MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		this.client.getTextureManager().bindTexture(field_19193);
+		RenderSystem.setShaderTexture(0, field_19193);
 		Tessellator var4 = Tessellator.getInstance();
 		BufferBuilder var5 = var4.getBuffer();
-		var5.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+		var5.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 		var5.vertex(0.0D, this.height, this.getZOffset()).texture(0.0F, 1.0F).next();
 		var5.vertex(this.width, this.height, this.getZOffset()).texture(1.0F, 1.0F).next();
 		var5.vertex(this.width, 0.0D, this.getZOffset()).texture(1.0F, 0.0F).next();
@@ -50,14 +52,14 @@ public class DOSScreen extends Screen {
 
 		protected ResourceTexture.TextureData loadTextureData (ResourceManager var1) {
 			MinecraftClient var2 = MinecraftClient.getInstance();
-			DefaultResourcePack var3 = var2.getResourcePackDownloader().getPack();
+			DefaultResourcePack var3 = var2.getResourcePackProvider().getPack();
 			byte[] var4 = new byte[4];
 
 			try {
 				InputStream var5 = var3.open(ResourceType.CLIENT_RESOURCES, this.field_19194);
 				Throwable var6 = null;
 
-				Object var9;
+				TextureData var9;
 				try {
 					var5.read(var4);
 					InputStream var7 = new FilterInputStream(var5) {
@@ -79,8 +81,6 @@ public class DOSScreen extends Screen {
 
 					try {
 						var9 = new ResourceTexture.TextureData(null, NativeImage.read(var7));
-					} catch (Throwable var34) {
-						throw var34;
 					} finally {
 						if (var7 != null) {
 							if (var8 != null) {
@@ -95,8 +95,6 @@ public class DOSScreen extends Screen {
 						}
 
 					}
-				} catch (Throwable var36) {
-					throw var36;
 				} finally {
 					if (var5 != null) {
 						if (var6 != null) {
@@ -112,7 +110,7 @@ public class DOSScreen extends Screen {
 
 				}
 
-				return (ResourceTexture.TextureData) var9;
+				return var9;
 			} catch (IOException var38) {
 				return new ResourceTexture.TextureData(var38);
 			}

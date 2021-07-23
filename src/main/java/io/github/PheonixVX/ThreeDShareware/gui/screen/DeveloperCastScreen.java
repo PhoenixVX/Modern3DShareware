@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.ResourceTexture;
@@ -31,7 +32,7 @@ public class DeveloperCastScreen extends Screen {
 		this.client.getTextureManager().bindTexture(field_19193);
 		Tessellator tesselator = Tessellator.getInstance();
 		BufferBuilder bufferBuilder = tesselator.getBuffer();
-		bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 		bufferBuilder.vertex(0.0D, this.height, this.getZOffset()).texture(0.0F, 1.0F).next();
 		bufferBuilder.vertex(this.width, this.height, this.getZOffset()).texture(1.0F, 1.0F).next();
 		bufferBuilder.vertex(this.width, 0.0D, this.getZOffset()).texture(1.0F, 0.0F).next();
@@ -50,7 +51,7 @@ public class DeveloperCastScreen extends Screen {
 
 		protected ResourceTexture.TextureData loadTextureData(ResourceManager var1) {
 			MinecraftClient var2 = MinecraftClient.getInstance();
-			DefaultResourcePack var3 = var2.getResourcePackDownloader().getPack();
+			DefaultResourcePack var3 = var2.getResourcePackProvider().getPack();
 			byte[] var4 = new byte[4];
 
 			try {
